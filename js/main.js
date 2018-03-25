@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 registerServiceWorker = () => {
   // Check that service workers are available
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/js/sw.js');
+    navigator.serviceWorker.register('/service_worker.js');
   } else {
     console.warn("Oops, seems your browser is not as soo good as Christopher Columbus");
   }
