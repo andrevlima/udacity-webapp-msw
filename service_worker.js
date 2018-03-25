@@ -17,20 +17,36 @@ if (workbox) {
       ]
     })
   );
+  // Cache Google Fonts
+  workbox.routing.registerRoute(
+    new RegExp('^https://fonts.(?:googleapis|gstatic).com/(.*)'),
+    workbox.strategies.cacheFirst({
+      cacheName: 'google-font-apis',
+      plugins: [
+        new workbox.expiration.Plugin({
+          maxEntries: 120
+        })
+      ]
+    })
+  );
+  // Maps requests
+  workbox.routing.registerRoute(/https:\/\/maps.googleapis.com\/maps\/api\/(.*)/, 
+    workbox.strategies.networkFirst({
+      cacheName: 'google-maps-apis'
+    })
+  );
+  
   // Resources files
   workbox.routing.registerRoute(/\.(?:js|css|json)$/,
     workbox.strategies.staleWhileRevalidate({
       cacheName: 'resources-files'
     })
   );
-  // Maps requests
-  workbox.routing.registerRoute(/https:\/\/maps.googleapis.com\/(maps\/api|maps-api-v3\/api)\/(.*)/, 
-    workbox.strategies.networkFirst()
-  );
+
   // Precache common page files
   workbox.precaching.precacheAndRoute([
     { url:'index.html', revision: 'v1' },
-    { url:'restaurant.html',revision: 'v1' }
+    { url:'restaurant.html', revision: 'v1' }
   ]);
 } else {
   console.error('Workbox can\'t be loaded or unavailable');
