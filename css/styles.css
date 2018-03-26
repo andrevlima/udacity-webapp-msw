@@ -1,5 +1,13 @@
 @charset "utf-8";
 /* CSS Document */
+.only-for-screenreader {
+  position:absolute;
+  left:-10000px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+}
 html {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
