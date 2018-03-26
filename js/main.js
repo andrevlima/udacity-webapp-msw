@@ -154,8 +154,8 @@ createRestaurantHTML = (restaurant) => {
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
   
-  let alt = restaurant.photograph_desc ? restaurant.photograph_desc : "ilustrative photo of the restaurant " + restaurant.name ;
-  image.alt = alt;
+  let alt = restaurant.photograph_desc ? restaurant.photograph_desc : "ilustrative photo of the restaurant" ;
+  image.alt = `Restaurant ${restaurant.name}, ${alt}`;
 
   li.append(image);
 
