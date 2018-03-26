@@ -20,7 +20,7 @@ td {
 }
 :focus {
   outline: 1px dotted darkgray;
-  /*outline: 10px dotted red;*/
+  box-shadow: 0 0 4px 2px gray;
 }
 body,td,th,p{
 	font-family: Arial, Helvetica, sans-serif;
