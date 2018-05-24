@@ -2,6 +2,13 @@ let restaurant;
 var map;
 
 /**
+ * Init the SW
+ */
+document.addEventListener('DOMContentLoaded', (event) => {
+  registerServiceWorker();
+});
+
+/**
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
@@ -181,4 +188,13 @@ getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+registerServiceWorker = () => {
+  // Check that service workers are available
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service_worker.js');
+  } else {
+    console.warn("Oops, seems your browser is not as soo good as Christopher Columbus");
+  }
 }

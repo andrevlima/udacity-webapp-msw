@@ -2,6 +2,99 @@
  * Common database helper functions.
  */
 class DBHelper {
+  constructor() {
+    tryToPollyfill();
+    this.isFirstCacheDone = false;
+  }
+
+  static fetchRestaurantsFromServer(id) {
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest();
+      if(id) {
+        xhr.open('GET', `${DBHelper.DATABASE_URL}/${id}`);
+      } else {
+        xhr.open('GET', `${DBHelper.DATABASE_URL}/`);
+      }
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const json = JSON.parse(xhr.responseText);
+          const restaurants = json;
+          resolve({ response: restaurants });
+        } else {
+          const error = (`Request failed. Returned status of ${xhr.status}`);
+          xhr.onerror();
+        }
+      };
+      xhr.onerror = (function() { reject({ status: this.status, statusText: xhr.statusText }) });
+      xhr.send();
+    });
+  }
+  
+  static getDataPromised(id_) {
+    let id = id_;
+    let dbPromised;
+    if(this.isFirstCacheDone) {
+      return (dbPromised = idb.open('db-restaurant', 1, (udb) => {
+        udb.createObjectStore('restaurants', { keyPath: 'id' });
+      }).then((wrapper) => {
+        let udb = wrapper._db;
+        const tx = udb.transaction('restaurants');
+
+        return new Promise((resolve, reject) => {
+          if(id) {
+            tx.objectStore('restaurants').get(id).onsuccess = function(event) {
+              callback(null, event.target.result);
+            }
+          } else {
+            tx.objectStore('restaurants').getAll().onsuccess = function(event) {
+              resolve(event.target.result);
+            }
+          }
+        });
+      }));
+    }
+    
+    let restaurants;
+    let alreadyMapped = false;
+    return this.fetchRestaurantsFromServer(id).then(function(data) {
+      restaurants = data.response;
+      return idb.open('db-restaurant', 1, (udb) => {
+        udb.createObjectStore('restaurants', { keyPath: 'id' });
+        return udb;
+      });
+    }).catch(() => {
+      this.isFirstCacheDone = true;
+      alreadyMapped = true;
+      console.warn("Retrieving from cached DB...");
+      return this.getDataPromised();
+    }).then((wrapper) => {
+      if(alreadyMapped) {
+        return wrapper;
+      }
+
+      var udb = wrapper._db;
+      var tasks = [].concat(restaurants).map((value) =>  {
+        return new Promise((res, rej) => {
+          const tx = udb.transaction(['restaurants'], 'readwrite');
+          tx.oncomplete = () => res(value); tx.onerror = () => res(value);
+
+          tx.objectStore('restaurants').put(value);
+          return value;
+        });
+      });
+      this.isFirstCacheDone = true;
+      return Promise.all(tasks);
+    });
+  } 
+
+  static tryToPollyfill() {
+    window.indexedDB = 
+    window.indexedDB || 
+    window.mozIndexedDB || 
+    window.webkitIndexedDB || 
+    window.msIndexedDB || 
+    window.shimIndexedDB;
+  }
 
   /**
    * Database URL.
@@ -16,39 +109,18 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        const restaurants = json;
-        callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
-      }
-    };
-    xhr.send();
+    this.getDataPromised().then((restaurants) => {
+      callback(null, restaurants);
+    });
   }
 
   /**
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', `${DBHelper.DATABASE_URL}/${id}`);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        const restaurant = json;
-        callback(null, restaurant);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
-        //callback('Restaurant does not exist', null);
-      }
-    };
-    xhr.send();
+    this.getDataPromised(id).then((restaurants) => {
+      callback(null, restaurants[0]);
+    });
   }
 
   /**
@@ -141,56 +213,18 @@ class DBHelper {
   }
 
   /**
-   * Restaurant page URL.
-   */
-  static urlForRestaurant(restaurant) {
-    return (`./restaurant.html?id=${restaurant.id}`);
-  }
-
-  static arrayBufferToBase64(buffer) {
-    var binary = '';
-    var bytes = [].slice.call(new Uint8Array(buffer));
-  
-    bytes.forEach((b) => binary += String.fromCharCode(b));
-  
-    return window.btoa(binary);
-  };
-
-  static fetchImage(url) {
-    const me = this;
-    return fetch(url, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'default'
-    }).then((response) => {
-      if(response.ok) {
-        return response;
-      }
-      throw new Error('Network response was not ok.');
-    }).catch((error) => {
-      return me.fetchImage(`/img/no_image_available.jpg`);
-    });
-  }
-
-
-  /**
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant, callback) {
-    callback(`/dist/img/${restaurant.id}.jpg`);
-    return;
+    let targetImg = restaurant.photograph ? restaurant.photograph : restaurant.id;
+    callback(`/dist/img/${targetImg}.jpg`);
+  }
 
-    const me = this;
-    const url = `/img/${restaurant.photograph}.jpg`;
-    
-    this.fetchImage(url).then((blob) => { 
-      blob.arrayBuffer().then((buffer) => {
-        var objectURL = me.arrayBufferToBase64(buffer); 
-        callback(`data:image/jpeg;base64,${objectURL}`); 
-      });      
-    }).catch(function(error) {
-      console.log('There has been a problem with your fetch operation: ', error.message);
-    });
+  /**
+  * Restaurant page URL.
+  */
+  static urlForRestaurant(restaurant) {
+    return (`./restaurant.html?id=${restaurant.id}`);
   }
 
   /**
@@ -200,11 +234,10 @@ class DBHelper {
     const marker = new google.maps.Marker({
       position: restaurant.latlng,
       title: restaurant.name,
-      url: DBHelper.urlForRestaurant(restaurant),
+      url: `./restaurant.html?id=${restaurant.id}`,
       map: map,
       animation: google.maps.Animation.DROP}
     );
     return marker;
   }
-
 }

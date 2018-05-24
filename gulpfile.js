@@ -8,7 +8,7 @@ const imagemin = require('gulp-imagemin');
  */
 gulp.task('minify-css', () => {
     return gulp.src('css/*.css')
-        .pipe(mincss({compatibility: 'ie8'}))
+        .pipe(mincss({compatibility: 'ie9'}))
         .pipe(gulp.dest('dist/css'));
 });
 

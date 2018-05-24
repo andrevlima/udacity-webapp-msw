@@ -91,6 +91,12 @@ window.initMap = () => {
     center: loc,
     scrollwheel: false
   });
+  google.maps.event.addListener(self.map, 'idle', function() {
+    debugger;
+    let iframe = document.getElementsByTagName("iframe").item(0);
+    iframe.title = "Maps";
+    iframe.setAttribute("aria-hidden", "true");
+  });
   updateRestaurants();
 }
 
@@ -193,5 +199,6 @@ addMarkersToMap = (restaurants = self.restaurants) => {
       window.location.href = marker.url
     });
     self.markers.push(marker);
+    
   });
 }
