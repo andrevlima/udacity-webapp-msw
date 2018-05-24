@@ -48,6 +48,14 @@ if (workbox) {
     { url:'index.html', revision: 'v1' },
     { url:'restaurant.html', revision: 'v1' }
   ]);
+
+  workbox.routing.registerRoute(
+    new RegExp('/restaurants($|/$|/[0-9])'),
+    workbox.strategies.cacheFirst({
+      cacheName: 'restaurant-data'
+    })
+  );
+  
 } else {
   console.error('Workbox can\'t be loaded or unavailable');
 }
