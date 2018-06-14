@@ -217,7 +217,7 @@ class DBHelper {
    */
   static imageUrlForRestaurant(restaurant, callback) {
     let targetImg = restaurant.photograph ? restaurant.photograph : restaurant.id;
-    callback(`/dist/img/${targetImg}.jpg`);
+    callback(`/dist/img/${targetImg}.webp`);
   }
 
   /**

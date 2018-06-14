@@ -20,7 +20,7 @@ class helper {
     */
     static imageUrlForRestaurant(restaurant, callback) {
         const me = this;
-        const url = `/img/${restaurant.photograph}.jpg`;
+        const url = `/img/${restaurant.photograph}.webp`;
 
         this.fetchImage(url).then((blob) => {
             blob.arrayBuffer().then((buffer) => {
@@ -44,7 +44,7 @@ class helper {
             }
             throw new Error('Network response was not ok.');
         }).catch((error) => {
-            return me.fetchImage(`/img/no_image_available.jpg`);
+            return me.fetchImage(`/img/no_image_available.webp`);
         });
     }
 

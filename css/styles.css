@@ -259,8 +259,7 @@ nav h1 a {
   margin: 10px 0px;
 }
 #restaurant-hours {
-	
-width:  100%;
+  width:  100%;
 }
 #restaurant-cuisine {
   background-color: #333;
@@ -342,6 +341,7 @@ width:  100%;
   font-weight:bold;
   display: inline-block;
   text-transform: uppercase;
+  border: none;
 }
 
 .review-date {
@@ -396,3 +396,123 @@ width:  100%;
 	}
 }
 
+input[type="text"], textarea {
+  width: 100%;
+  margin: 5px 0;
+  padding: 8px;
+  border: 1px solid rgb(128, 127, 127);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+textarea {
+  resize: vertical;
+  height: 80px;
+}
+
+/** ---------- STAR RATING ------------ */
+input[type="radio"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+input[type="radio"]:focus::before {
+  outline: 1px dotted darkgray;
+  box-shadow: 0 0 4px 2px gray;
+}
+
+input[type="radio"] {
+  cursor: pointer;
+  width: 0;
+  margin: 5px 10px;
+  font-size: 0px;
+}
+
+input[type="radio"]::before {
+  color: white;
+  cursor: pointer;
+  content: "★";
+  width: 20px;
+  font-size: 24px;
+  top: -12px;
+  left: -8px;
+  position: relative;
+  visibility: visible;
+}
+
+input[type="radio"]:checked ~ input::before {
+  content: "☆";
+}
+
+
+button.btn-default {
+  display: inline-block;
+  background-color: orange;
+  color: #fff;
+  font-size: 10pt;
+  padding: 8px 30px 10px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  border: none;
+}
+button.btn-default:hover {
+  opacity: 0.75;
+}
+
+#reviews-writer .reviews-writer-content {
+  background: white;
+  padding: 10px 15px;
+}
+
+#reviews-writer .reviews-writer-title {
+  background: #444;
+  padding: 14px 15px;
+  color: white;
+}
+
+#reviews-writer .reviews-writer-title h4 {
+  margin: 0px;
+}
+
+#reviews-writer {
+  border-top-left-radius: 20px;
+  border-bottom-right-radius: 20px;  
+  overflow: hidden;
+  margin: 20px 0px;
+}
+
+.btn-submit {
+  margin: 5px 0;
+  float: right;
+}
+
+@media screen and (max-width: 669px) { 
+  button.btn-default {
+    display: block;
+    width: 100%;
+    float: none;
+  }
+}
+
+.alert-msg {
+  position: fixed;
+  bottom: 25px;
+  left: -100%;
+  padding: 20px 30px;
+  font-size: 14px;
+  background: #444;
+  border-radius: 3px;
+  color: white;
+  z-index: 2000;
+  max-width: 500px;
+}
+
+.alert-msg.show {
+  transition: 1s ease-in-out left;
+  left: 30px;
+}
+
+.alert-msg.hide {
+  transition: 0.5s ease-in-out left;
+  left: -100%;
+}

@@ -3,10 +3,63 @@ var map;
 
 /**
  * Init the SW
+ * Bind review form
  */
+
 document.addEventListener('DOMContentLoaded', (event) => {
   registerServiceWorker();
+  bindReviewForm();
 });
+
+showAlert = (message) => {
+  let msg = document.createElement('div');
+  msg.innerHTML = `<div role="alert" class="alert-msg">${message}</div>`;
+  msg = msg.firstChild;
+  
+  document.body.appendChild(msg);
+  setTimeout(() => msg.className = "alert-msg show", 200);
+  setTimeout(() => msg.className = "alert-msg hide", 4000);
+  setTimeout(() => msg.remove(), 5000);
+}
+
+bindReviewForm = () => {
+  document.querySelector("#review-form").addEventListener('submit', function(e) {
+    // compose the data object
+    const data = getReviewForm();
+    console.log('Data sent', data);
+
+    fetch('http://localhost:1337/reviews/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }).then(response => response.json()).then('Response', console.log);
+    
+    showAlert('Review submited!');
+
+    // reset form
+    setReviewForm('', '', 3);
+
+    e.preventDefault(); // stop it's effects here
+    e.stopPropagation(); // stop it from bubbling up
+
+    fillRestaurantReviews();
+    return false;
+  });
+}
+
+setReviewForm = (name, comments, rating) => {
+  document.querySelector("#review-name").value = name;
+  document.querySelector(`[name='review-ratio'][value='${rating}']`).checked = true;
+  document.querySelector("#review-comment").value = comments;
+}
+
+getReviewForm = () => {
+  return {
+    restaurant_id: getParameterByName('id'),
+    name: document.querySelector("#review-name").value,
+    rating: document.querySelector("[name='review-ratio']:checked").value,
+    comments: document.querySelector("#review-comment").value
+  };
+}
 
 /**
  * Initialize Google map, called from HTML.
@@ -52,6 +105,10 @@ fetchRestaurantFromURL = (callback) => {
   }
 }
 
+fillRestaurantReviews = () => {
+  fetchRestaurantReviews().then(fillReviewsHTML);
+}
+
 /**
  * Create restaurant HTML and add it to the webpage
  */
@@ -79,7 +136,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  fillRestaurantReviews();
 }
 
 /**
@@ -102,15 +159,19 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   }
 }
 
+fetchRestaurantReviews = (restaurantId = getParameterByName('id')) => {
+  return fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantId}`, {
+    method: 'GET'
+  }).then(response => response.json());
+}
+
 /**
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
-  const title = document.createElement('h3');
-  title.classList.add("reviews-section-title");
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
+  const ul = document.getElementById('reviews-list');
+  ul.innerHTML = "";
 
   if (!reviews) {
     const noReviews = document.createElement('p');
@@ -118,7 +179,6 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     container.appendChild(noReviews);
     return;
   }
-  const ul = document.getElementById('reviews-list');
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
@@ -145,7 +205,7 @@ createReviewHTML = (review) => {
 
   const date = document.createElement('span');
   date.classList.add("review-date");
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.createdAt).toDateString();
   title.appendChild(date);
 
   const rating = document.createElement('span');

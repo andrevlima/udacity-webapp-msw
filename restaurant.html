@@ -5,7 +5,7 @@
   <!-- Normalize.css for better cross-browser consistency -->
   <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
   <!-- Main CSS file -->
-  <link rel="stylesheet" href="dist/css/styles.css" type="text/css">
+  <link rel="stylesheet" href="css/styles.css" type="text/css">
   <title>Restaurant Info</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,7 +56,30 @@
     <!-- end restaurant -->
     <!-- Beginning reviews -->
     <section id="reviews-container">
+      <h3 class="reviews-section-title">Reviews</h3>
       <ul id="reviews-list"></ul>
+      <div id="reviews-writer">
+        <div class="reviews-writer-title">
+          <h4>Write a review</h4>
+        </div>
+        <div class="reviews-writer-content">
+          <form method="POST" id="review-form">
+            <label id="reviewer-label">Name:</label>
+            <input placeholder="Reviewer name here..." type="text" id="review-name" aria-labelledby="reviewer-label" required>
+            <label id="comment-label">Comment:</label>
+            <textarea placeholder="Write your comment here..." id="review-comment" aria-labelledby="comment-label" required></textarea>
+            <label id="ratting-label">Ratting:</label>
+            <fieldset class="review-rating" aria-labelledby="ratting-label" role="radiogroup">
+              <input type="radio" name="review-ratio" aria-label="Select to give ratting 1" value="1">
+              <input type="radio" name="review-ratio" aria-label="Select to give ratting 2" value="2">
+              <input type="radio" name="review-ratio" aria-label="Select to give ratting 3" value="3" checked>
+              <input type="radio" name="review-ratio" aria-label="Select to give ratting 4" value="4">
+              <input type="radio" name="review-ratio" aria-label="Select to give ratting 5" value="5">
+            </fieldset>
+            <button type="submit" class="btn-default btn-submit" aria-label="Click to submit your review">Submit</button>
+          </form>
+        </div>
+      </div>
     </section>
     <!-- End reviews -->
   </main>
@@ -75,7 +98,7 @@
   <!-- Database helpers -->
   <script type="text/javascript" src="dist/js/dbhelper.js"></script>
   <!-- Main javascript file -->
-  <script type="text/javascript" src="dist/js/restaurant_info.js"></script>
+  <script type="text/javascript" src="js/restaurant_info.js"></script>
   <!-- Tab jumper -->
   <script type="application/javascript" charset="utf-8" src="dist/js/tab_jumper.js"></script>
   <!-- Google Maps -->

@@ -2,6 +2,7 @@ const gulp = require('gulp');
 const mincss = require('gulp-clean-css');
 const minjs = require('gulp-minify');
 const imagemin = require('gulp-imagemin');
+const webp = require('gulp-webp');
 
 /**
  * CSS preprocessing
@@ -29,13 +30,14 @@ gulp.task('minify-js', () => {
 /**
  * Image preprocessing
  */
-gulp.task('minify-img', () =>
-    gulp.src('img/*.*')
-        .pipe(imagemin())
-        .pipe(gulp.dest('dist/img'))
-);
+gulp.task('optimize-img', () => {
+     gulp.src('img/*.*')
+        .pipe(webp())
+        .pipe(gulp.dest('dist/img'));
+    
+});
   
 /**
  * Default task profile
  */
-gulp.task('default', [ 'minify-css', 'minify-js', 'minify-img' ]);
+gulp.task('default', [ 'minify-css', 'minify-js', 'optimize-img' ]);
