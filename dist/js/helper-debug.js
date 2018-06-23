@@ -1,5 +1,5 @@
-class helper {
-    /**
+class Helper {
+   /**
    * Restaurant page URL.
    */
     static urlForRestaurant(restaurant) {
@@ -48,4 +48,14 @@ class helper {
         });
     }
 
+    static showAlert(message) {
+        let msg = document.createElement('div');
+        msg.innerHTML = `<div role="alert" class="alert-msg">${message}</div>`;
+        msg = msg.firstChild;
+        
+        document.body.appendChild(msg);
+        setTimeout(() => msg.className = "alert-msg show", 200);
+        setTimeout(() => msg.className = "alert-msg hide", 4000);
+        setTimeout(() => msg.remove(), 5000);
+    }
 }

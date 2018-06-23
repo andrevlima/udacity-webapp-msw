@@ -3,7 +3,7 @@ let restaurants,
   cuisines
 var map
 var markers = []
-
+let DOMLoaded = false;
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
   registerServiceWorker();
   fetchNeighborhoods();
   fetchCuisines();
+  DOMLoaded = true;
+  DBHelper.bindAlertWhenOffOrOn();
 });
 
 
@@ -86,17 +88,26 @@ window.initMap = () => {
     lat: 40.722216,
     lng: -73.987501
   };
-  self.map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 12,
-    center: loc,
-    scrollwheel: false
-  });
-  google.maps.event.addListener(self.map, 'idle', function() {
-    debugger;
-    let iframe = document.getElementsByTagName("iframe").item(0);
-    iframe.title = "Maps";
-    iframe.setAttribute("aria-hidden", "true");
-  });
+  let runMap = () => {
+    self.map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 12,
+      center: loc,
+      scrollwheel: false
+    });
+    google.maps.event.addListener(self.map, 'idle', function() {
+      let iframe = document.getElementsByTagName("iframe").item(0);
+      iframe.title = "Maps";
+      iframe.setAttribute("aria-hidden", "true");
+    });
+    addMarkersToMap();
+  };
+
+  if(DOMLoaded) { 
+    setTimeout(runMap, 2500);
+  } else {
+    document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 2500));
+  }
+    
   updateRestaurants();
 }
 
@@ -120,7 +131,7 @@ updateRestaurants = () => {
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
     }
-  })
+  });
 }
 
 /**
@@ -146,7 +157,6 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
-  addMarkersToMap();
 }
 
 /**

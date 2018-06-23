@@ -1,12 +1,56 @@
 let restaurant;
 var map;
+let DOMLoaded = false;
 
 /**
  * Init the SW
+ * Bind review form
  */
+
 document.addEventListener('DOMContentLoaded', (event) => {
   registerServiceWorker();
+  bindReviewForm();
+  DOMLoaded = true;
+  DBHelper.bindAlertWhenOffOrOn();
 });
+
+bindReviewForm = () => {
+  document.querySelector("#review-form").addEventListener('submit', function(e) {
+    // compose the data object
+    const data = getReviewForm();
+    console.log('Data sent', data);
+
+    DBHelper.sendReview(data)
+      .then(response => response.json())
+      .then('Response', console.log);
+    
+    Helper.showAlert('Review submited!');
+
+    // reset form
+    setReviewForm('123', '123', 3);
+
+    e.preventDefault(); // stop it's effects here
+    e.stopPropagation(); // stop it from bubbling up
+
+    fillRestaurantReviews();
+    return false;
+  });
+}
+
+setReviewForm = (name, comments, rating) => {
+  document.querySelector("#review-name").value = name;
+  document.querySelector(`[name='review-ratio'][value='${rating}']`).checked = true;
+  document.querySelector("#review-comment").value = comments;
+}
+
+getReviewForm = () => {
+  return {
+    restaurant_id: getParameterByName('id'),
+    name: document.querySelector("#review-name").value,
+    rating: document.querySelector("[name='review-ratio']:checked").value,
+    comments: document.querySelector("#review-comment").value
+  };
+}
 
 /**
  * Initialize Google map, called from HTML.
@@ -16,13 +60,26 @@ window.initMap = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      let runMap = () => {
+        self.map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 16,
+          center: restaurant.latlng,
+          scrollwheel: false
+        });
+        google.maps.event.addListener(self.map, 'idle', function() {
+          let iframe = document.getElementsByTagName("iframe").item(0);
+          iframe.title = "Maps";
+          iframe.setAttribute("aria-hidden", "true");
+        });
+        fillBreadcrumb();
+        DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      }
+
+      if(DOMLoaded) { 
+        setTimeout(runMap, 2500);
+      } else {
+        document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 2500));
+      }
     }
   });
 }
@@ -52,6 +109,10 @@ fetchRestaurantFromURL = (callback) => {
   }
 }
 
+fillRestaurantReviews = () => {
+  fetchRestaurantReviews().then(fillReviewsHTML);
+}
+
 /**
  * Create restaurant HTML and add it to the webpage
  */
@@ -79,7 +140,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  fillRestaurantReviews();
 }
 
 /**
@@ -102,15 +163,23 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   }
 }
 
+fetchRestaurantReviews = (restaurantId = getParameterByName('id')) => {
+  return Promise.all(
+    [
+      fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantId}`, { method: 'GET' }).then(response => response.json()),
+      DBHelper.fetchPedingReviews(restaurantId)
+    ]).then((values) => {
+    return (values[0]).concat(values[1]);
+  });
+}
+
 /**
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
-  const title = document.createElement('h3');
-  title.classList.add("reviews-section-title");
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
+  const ul = document.getElementById('reviews-list');
+  ul.innerHTML = "";
 
   if (!reviews) {
     const noReviews = document.createElement('p');
@@ -118,7 +187,6 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     container.appendChild(noReviews);
     return;
   }
-  const ul = document.getElementById('reviews-list');
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
@@ -145,7 +213,7 @@ createReviewHTML = (review) => {
 
   const date = document.createElement('span');
   date.classList.add("review-date");
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.createdAt).toDateString();
   title.appendChild(date);
 
   const rating = document.createElement('span');

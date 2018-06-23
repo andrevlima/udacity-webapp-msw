@@ -1,9 +1,9 @@
 @charset "utf-8";
 
 noscript {
-  border: 1px dashed #f58500;
+  border: 1px dashed #854500;
   background-color: #f3f3f3;
-  color: #f58500;
+  color: #854500;
   padding: 5px;
 }
 /* CSS Document */
@@ -22,7 +22,7 @@ html {
 }
 hr {
   border: none;
-  border-bottom: 2px solid #f18200;
+  border-bottom: 2px solid #854500;
   margin: 15px 0px;
 }
 td {
@@ -54,11 +54,17 @@ ul, li {
 	color: #333;
 }
 a {
-	color: orange;
+	color: #854500;
 	text-decoration: none;
 }
+#footer a {
+  color: #F7F7F7;
+}
+#footer a:hover, #footer a:focus {
+  text-decoration: underline;
+}
 a:hover, a:focus {
-	color: #3397db;
+	color: #185D8B;
 	text-decoration: none;
 }
 a img{
@@ -77,7 +83,7 @@ article, aside, canvas, details, figcaption, figure, footer, header, hgroup, men
 }
 #footer {
   background-color: #444;
-  color: #aaa;
+  color: #DBDBDB;
   font-size: 8pt;
   letter-spacing: 1px;
   padding: 25px;
@@ -107,7 +113,7 @@ nav h1 a {
     list-style: none;
     font-size: 17px;
     margin: 0;
-    background-color:  #3397DB;
+    background-color:  #185D8B;
     color:  white;
 }
 
@@ -147,7 +153,7 @@ nav h1 a {
   /* box-sizing: border-box; */
   width: 100%;
   padding: 15px;
-  background-color: #3397DB;
+  background-color: #185D8B;
   align-items: center;
 }
 .filter-options h2 {
@@ -156,6 +162,7 @@ nav h1 a {
   font-weight: normal;
   line-height: 1;
   margin: 0px 10px;
+  font-weight: bold;
 }
 .filter-options select {
   background-color: white;
@@ -200,7 +207,7 @@ nav h1 a {
   display: inline-block;
   padding: 10px;
   border: 1px solid lightgray;
-  border-top: 3px solid #3397DB;
+  border-top: 3px solid #185D8B;
 }
 #restaurants-list .restaurant-img {
   background-color: #ccc;
@@ -211,7 +218,7 @@ nav h1 a {
   min-width: 100%;
 }
 #restaurants-list li h3 {
-  color: #ea8003; /*#f18200;*/
+  color: #854500; /*#f18200;*/
   font-family: Arial,sans-serif;
   font-size: 14pt;
   font-weight: 200;
@@ -225,7 +232,7 @@ nav h1 a {
   font-size: 11pt;
 }
 #restaurants-list li a {
-  background-color: orange;
+  background-color: #854500;
   border-bottom: 3px solid #eee;
   color: #fff;
   display: inline-block;
@@ -239,7 +246,7 @@ nav h1 a {
 
 /* ====================== Restaurant Details ====================== */
 #restaurant-name {
-  color: #f18200;
+  color: #854500;
   font-family: Arial,sans-serif;
   font-size: 20pt;
   font-weight: 200;
@@ -275,7 +282,7 @@ nav h1 a {
 }
 #restaurant-container {
   background:  white;
-  /* border-top: 4px solid #3397DB; */
+  /* border-top: 4px solid #185D8B; */
 }
 
 #restaurant-container, #reviews-container {
@@ -287,7 +294,7 @@ nav h1 a {
   padding: 30px 40px 80px;
 }
 #reviews-container .reviews-section-title {
-  color: #f58500;
+  color: #854500;
   font-size: 24pt;
   font-weight: 300;
   letter-spacing: -1px;
@@ -333,7 +340,7 @@ nav h1 a {
   font-size: 15px;
 }
 .review-rating {
-  background-color:orange;
+  background-color:#854500;
   color:white;
   padding: 0.2em 0.9em;
   margin: 0.5em 0em;
@@ -446,7 +453,7 @@ input[type="radio"]:checked ~ input::before {
 
 button.btn-default {
   display: inline-block;
-  background-color: orange;
+  background-color: #854500;
   color: #fff;
   font-size: 10pt;
   padding: 8px 30px 10px;

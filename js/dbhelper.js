@@ -4,7 +4,22 @@
 class DBHelper {
   constructor() {
     tryToPollyfill();
+    bindAlertWhenOffOrOn();
     this.isFirstCacheDone = false;
+    window.isNot = (exp) => !exp;
+  }
+
+  static bindAlertWhenOffOrOn() {
+    let updateOnlineStatus = ()=> {
+      var condition = navigator.onLine ? "online" : "offline";
+
+      Helper.showAlert(`Now, you are ${condition}!`);
+    }
+    window.addEventListener('online',  () => {
+      updateOnlineStatus(); 
+      DBHelper.resendPendingReviews();
+    });
+    window.addEventListener('offline', updateOnlineStatus);
   }
 
   static fetchRestaurantsFromServer(id) {
@@ -30,13 +45,118 @@ class DBHelper {
     });
   }
   
+  
+
+  static sendReview(data) {
+    return fetch('http://localhost:1337/reviews/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      if (!response.ok) { throw response };
+      return response;
+    })
+    .catch(err => {
+      idb.open('db-pending', 1, (udb) => {
+        udb.createObjectStore('review', { autoIncrement: true, keyPath: "cache_id" });
+      }).then((wrapper) => {
+        let udb = wrapper._db;
+        const tx = udb.transaction(['review'], 'readwrite');
+        tx.objectStore('review').add(data);
+        return tx;
+      });
+      throw err;
+    });
+  }
+
+  static resendPendingReviews() {
+    let _self = this;
+    idb.open('db-pending', 1, (udb) => {
+      udb.createObjectStore('review', { autoIncrement: true, keyPath: "cache_id" });
+    }).then((wrapper) => {
+      const udb = wrapper._db;
+      const tx = udb.transaction(['review'], 'readwrite');
+      const table = tx.objectStore('review');
+
+      table.getAll().onsuccess = function(event) {
+        [].concat(event.target.result).forEach((value) => {
+          let index = value.cache_id;
+          //if pass, remove it from peding...
+          _self.sendReview(value)
+          .then(() => {
+            _self.removePendingReview(index);
+          });
+        });
+      }
+
+      return tx;
+    });
+  }
+
+  static removePendingReview(index) {
+    return idb.open('db-pending', 1, (udb) => {
+      udb.createObjectStore('review', { autoIncrement: true, keyPath: "cache_id" });
+    }).then((wrapper) => {
+      const udb = wrapper._db;
+      const tx = udb.transaction(['review'], 'readwrite');
+      const table = tx.objectStore('review');
+
+      table.delete(index);
+
+      return tx;
+    });
+  }
+
+  static fetchPedingReviews(restaurant_id) {
+    return idb.open('db-pending', 1, (udb) => {
+      udb.createObjectStore('review', { autoIncrement: true, keyPath: "cache_id" });
+    }).then((wrapper) => {
+      const udb = wrapper._db;
+      const tx = udb.transaction(['review'], 'readwrite');
+      const table = tx.objectStore('review');
+
+      return new Promise(function(resolve, reject) {
+        table.getAll().onsuccess = function(event) {
+          let result = event.target.result.filter((review) => review.restaurant_id == restaurant_id);
+          resolve(result);
+        }
+      });
+    });
+  }
+
+/*
+  static getReviewsByRestaurantPromised(id) {
+    return this.getDB().then((wrapper) => {
+      let udb = wrapper._db;
+      const tx = udb.transaction('reviews_restaurant');
+
+      return new Promise((resolve, reject) => {
+        tx.objectStore('reviews_restaurant').get(id).onsuccess = function(event) {
+          resolve(null, event.target.result);
+        }
+      });
+    });
+  }
+*/
+
+  static getDB() {
+    return idb.open('db-restaurant', 1, (udb) => {
+      switch(udb.oldVersion) {
+        case 1: 
+          udb.createObjectStore('restaurants', { keyPath: 'id' });
+        case 2:
+          udb.createObjectStore('reviews_restaurant', { keyPath: 'restaurant_id' });
+      }
+      //udb.createIndex("reviews_restaurant", "restaurant_id", { unique: false });
+      return udb;
+    });
+  }
+  
   static getDataPromised(id_) {
     let id = id_;
     let dbPromised;
     if(this.isFirstCacheDone) {
-      return (dbPromised = idb.open('db-restaurant', 1, (udb) => {
-        udb.createObjectStore('restaurants', { keyPath: 'id' });
-      }).then((wrapper) => {
+      return (dbPromised = this.getDB()).then((wrapper) => {
         let udb = wrapper._db;
         const tx = udb.transaction('restaurants');
 
@@ -51,11 +171,12 @@ class DBHelper {
             }
           }
         });
-      }));
+      });
     }
     
     let restaurants;
     let alreadyMapped = false;
+    let _self = this;
     return this.fetchRestaurantsFromServer(id).then(function(data) {
       restaurants = data.response;
       return idb.open('db-restaurant', 1, (udb) => {

@@ -1,5 +1,6 @@
 let restaurant;
 var map;
+let DOMLoaded = false;
 
 /**
  * Init the SW
@@ -9,18 +10,9 @@ var map;
 document.addEventListener('DOMContentLoaded', (event) => {
   registerServiceWorker();
   bindReviewForm();
+  DOMLoaded = true;
+  DBHelper.bindAlertWhenOffOrOn();
 });
-
-showAlert = (message) => {
-  let msg = document.createElement('div');
-  msg.innerHTML = `<div role="alert" class="alert-msg">${message}</div>`;
-  msg = msg.firstChild;
-  
-  document.body.appendChild(msg);
-  setTimeout(() => msg.className = "alert-msg show", 200);
-  setTimeout(() => msg.className = "alert-msg hide", 4000);
-  setTimeout(() => msg.remove(), 5000);
-}
 
 bindReviewForm = () => {
   document.querySelector("#review-form").addEventListener('submit', function(e) {
@@ -28,12 +20,11 @@ bindReviewForm = () => {
     const data = getReviewForm();
     console.log('Data sent', data);
 
-    fetch('http://localhost:1337/reviews/', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    }).then(response => response.json()).then('Response', console.log);
+    DBHelper.sendReview(data)
+      .then(response => response.json())
+      .then('Response', console.log);
     
-    showAlert('Review submited!');
+    Helper.showAlert('Review submited!');
 
     // reset form
     setReviewForm('', '', 3);
@@ -69,13 +60,26 @@ window.initMap = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      let runMap = () => {
+        self.map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 16,
+          center: restaurant.latlng,
+          scrollwheel: false
+        });
+        google.maps.event.addListener(self.map, 'idle', function() {
+          let iframe = document.getElementsByTagName("iframe").item(0);
+          iframe.title = "Maps";
+          iframe.setAttribute("aria-hidden", "true");
+        });
+        fillBreadcrumb();
+        DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
+      }
+
+      if(DOMLoaded) { 
+        setTimeout(runMap, 2500);
+      } else {
+        document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 2500));
+      }
     }
   });
 }
@@ -160,9 +164,13 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 }
 
 fetchRestaurantReviews = (restaurantId = getParameterByName('id')) => {
-  return fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantId}`, {
-    method: 'GET'
-  }).then(response => response.json());
+  return Promise.all(
+    [
+      fetch(`http://localhost:1337/reviews/?restaurant_id=${restaurantId}`, { method: 'GET' }).then(response => response.json()),
+      DBHelper.fetchPedingReviews(restaurantId)
+    ]).then((values) => {
+    return (values[0]).concat(values[1]);
+  });
 }
 
 /**

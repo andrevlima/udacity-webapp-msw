@@ -15,7 +15,7 @@ gulp.task('minify-css', () => {
 
 /**
  * JavaScript preprocessing
- */
+*/
 gulp.task('minify-js', () => {
     return gulp.src('js/*.js')
     .pipe(minjs({
@@ -26,7 +26,7 @@ gulp.task('minify-js', () => {
     }))
     .pipe(gulp.dest('dist/js'));
 });
-
+    
 /**
  * Image preprocessing
  */
