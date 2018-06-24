@@ -71,7 +71,6 @@ window.initMap = () => {
           iframe.title = "Maps";
           iframe.setAttribute("aria-hidden", "true");
         });
-        fillBreadcrumb();
         DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
       }
 
@@ -97,7 +96,7 @@ fetchRestaurantFromURL = (callback) => {
     error = 'No restaurant id in URL'
     callback(error, null);
   } else {
-    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+    DBHelper.fetchRestaurantById(parseInt(id), (restaurant) => {
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
@@ -134,6 +133,8 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
   cuisine.setAttribute("aria-label", "Cuisine type is " + restaurant.cuisine_type);
+
+  fillBreadcrumb();
 
   // fill operating hours
   if (restaurant.operating_hours) {

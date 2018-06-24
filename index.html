@@ -26,7 +26,12 @@
 
   <main id="maincontent">
     <section id="map-container">
-      <div id="map" role="application"></div>
+      <div id="map" role="application" style="display: none"></div>
+      <!--
+        <div id="map2" role="application">
+          <img alt="Representative application photo for restaurant reviews" style="background-image: url(/dist/img/dummy.webp)">
+        </div>
+      -->
     </section>
     <section>
       <div class="filter-options">
@@ -37,6 +42,7 @@
         <select id="cuisines-select" name="cuisines" onchange="updateRestaurants()" aria-label="Select cuisines">
           <option value="all">All Cuisines</option>
         </select>
+        <button class="show-map-btn" aria-label="Toggle maps display (shown or hidden)" onclick="Helper.displayMapToggle()">Map <span>&#127760;</span></button>
       </div>
       <ul id="restaurants-list"></ul>
     </section>
@@ -44,7 +50,7 @@
   
 
   <script src="dist/js/helper.js"></script>  
-  <script src="/js/idb.js"></script>
+  <script src="dist/js/idb.js"></script>
   <script type="application/javascript" charset="utf-8" src="dist/js/dbhelper.js"></script>
   <script type="application/javascript" charset="utf-8" src="dist/js/main.js"></script>
   <script type="application/javascript" charset="utf-8" src="dist/js/tab_jumper.js"></script>

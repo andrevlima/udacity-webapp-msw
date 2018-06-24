@@ -37,7 +37,14 @@
   <main id="maincontent">
     <!-- Beginning map -->
     <section id="map-container">
-      <div id="map" role="application"></div>
+      <div id="map" role="application">
+        <label style="    
+        padding: 25px;
+        font-weight: bold;
+        position: static;
+        display: block;
+        color: #4e4e4e;">Loading Map... (Lazing)</label>
+      </div>
     </section>
     <!-- End map -->
     <!-- Beginning restaurant -->
@@ -58,9 +65,9 @@
     <section id="reviews-container">
       <h3 class="reviews-section-title">Reviews</h3>
       <ul id="reviews-list"></ul>
-      <div id="reviews-writer">
+      <div id="reviews-writer" role="form" aria-labelledby="review-form-title">
         <div class="reviews-writer-title">
-          <h4>Write a review</h4>
+          <h4 id="review-form-title">Write a review</h4>
         </div>
         <div class="reviews-writer-content">
           <form method="POST" id="review-form">
@@ -100,7 +107,7 @@
   <!-- Database helpers -->
   <script type="text/javascript" src="dist/js/dbhelper.js"></script>
   <!-- Main javascript file -->
-  <script type="text/javascript" src="js/restaurant_info.js"></script>
+  <script type="text/javascript" src="dist/js/restaurant_info.js"></script>
   <!-- Tab jumper -->
   <script type="application/javascript" charset="utf-8" src="dist/js/tab_jumper.js"></script>
   <!-- Google Maps -->

@@ -12,14 +12,21 @@ class DBHelper {
   static bindAlertWhenOffOrOn() {
     let updateOnlineStatus = ()=> {
       var condition = navigator.onLine ? "online" : "offline";
-
       Helper.showAlert(`Now, you are ${condition}!`);
+    }
+    const resendAllPendings = () => {
+      DBHelper.resendPendingReviews();
+      DBHelper.resendPendingFavorites();
     }
     window.addEventListener('online',  () => {
       updateOnlineStatus(); 
-      DBHelper.resendPendingReviews();
+      resendAllPendings();
     });
     window.addEventListener('offline', updateOnlineStatus);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(resendAllPendings, 2000);
+    })
   }
 
   static fetchRestaurantsFromServer(id) {
@@ -66,6 +73,81 @@ class DBHelper {
         return tx;
       });
       throw err;
+    });
+  }
+
+  static getPendingFavoriteDB() {
+    return idb.open('db-pending-favorites', 1, (udb) => {
+      udb.createObjectStore('favorites', { keyPath: "id" });
+      return udb;
+    });
+  }
+
+  static resendPendingFavorites() {
+    let _self = this;
+    return this.getPendingFavoriteDB().then((wrapper) => {
+      const udb = wrapper._db;
+      const tx = udb.transaction(['favorites'], 'readwrite');
+      const table = tx.objectStore('favorites');
+
+      return new Promise((resolve) => {
+        table.getAll().onsuccess = function(event) {
+          [].concat(event.target.result).forEach((value) => {
+            let index = value.id;
+            //if pass, remove it from peding...
+            _self.sendFavorite(value)
+            .then(() => {
+              _self.removePendingReview(index);
+            });
+          });
+        }
+      })
+    });
+  }
+
+  static sendFavorite(fav) {
+    const _self = this;
+    return fetch(`http://localhost:1337/restaurants/${fav.id}/?is_favorite=${fav.is_favorite}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors'
+    })
+    .then(response => {
+      if (!response.ok) { throw response };
+      _self.removePendingFavorite(fav.id);
+      return response;
+    })
+    .catch(err => {
+      _self.setPendingFavorites(fav);
+      throw err;
+    });
+  }
+  
+  static removePendingFavorite(index) {
+    return this.getPendingFavoriteDB().then((wrapper) => {
+      const udb = wrapper._db;
+      const tx = udb.transaction(['favorites'], 'readwrite');
+      const table = tx.objectStore('favorites');
+
+      table.delete(index);
+
+      return tx;
+    });
+  }
+
+  static setPendingFavorites(fav) {
+    return this.getPendingFavoriteDB().then((wrapper) => {
+      const udb = wrapper._db;
+      const tx = udb.transaction(['favorites'], 'readwrite');
+      const table = tx.objectStore('favorites');
+
+      return new Promise((resolve) => {
+        table.put(fav).onsuccess = function(event) {
+          resolve();
+        }
+      })
     });
   }
 
@@ -124,21 +206,6 @@ class DBHelper {
     });
   }
 
-/*
-  static getReviewsByRestaurantPromised(id) {
-    return this.getDB().then((wrapper) => {
-      let udb = wrapper._db;
-      const tx = udb.transaction('reviews_restaurant');
-
-      return new Promise((resolve, reject) => {
-        tx.objectStore('reviews_restaurant').get(id).onsuccess = function(event) {
-          resolve(null, event.target.result);
-        }
-      });
-    });
-  }
-*/
-
   static getDB() {
     return idb.open('db-restaurant', 1, (udb) => {
       switch(udb.oldVersion) {
@@ -163,7 +230,8 @@ class DBHelper {
         return new Promise((resolve, reject) => {
           if(id) {
             tx.objectStore('restaurants').get(id).onsuccess = function(event) {
-              callback(null, event.target.result);
+              //callback(null, event.target.result);
+              resolve([event.target.result]);
             }
           } else {
             tx.objectStore('restaurants').getAll().onsuccess = function(event) {
@@ -197,7 +265,8 @@ class DBHelper {
       var tasks = [].concat(restaurants).map((value) =>  {
         return new Promise((res, rej) => {
           const tx = udb.transaction(['restaurants'], 'readwrite');
-          tx.oncomplete = () => res(value); tx.onerror = () => res(value);
+          tx.oncomplete = () => res(value); 
+          tx.onerror = () => res(value);
 
           tx.objectStore('restaurants').put(value);
           return value;
@@ -239,8 +308,8 @@ class DBHelper {
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
-    this.getDataPromised(id).then((restaurants) => {
-      callback(null, restaurants[0]);
+    this.getDataPromised(id).then((restaurant) => {
+      callback(restaurant[0]);
     });
   }
 
@@ -360,5 +429,28 @@ class DBHelper {
       animation: google.maps.Animation.DROP}
     );
     return marker;
+  }
+
+  static markAsFavorite(restaurant_id, hasFavorite) {
+    return this.sendFavorite({ id: restaurant_id, is_favorite: hasFavorite }).catch(() => new Promise((resolve) => {
+      const top_resolve = resolve;
+      this.fetchRestaurantById(restaurant_id, (restaurant) => {
+        var restaurant = restaurant;
+        this.getDB().then((wrapper) => {
+          let udb = null;
+          udb = wrapper._db;
+          const tx = udb.transaction(['restaurants'], 'readwrite');
+
+          restaurant.is_favorite = hasFavorite;
+    
+          return new Promise((resolve, reject) => {
+            tx.objectStore('restaurants').put(restaurant).onsuccess = function(event) {
+              resolve(event.target.result);
+              top_resolve(restaurant);
+            }
+          });
+        });
+      })
+    }));
   }
 }

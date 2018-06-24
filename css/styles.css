@@ -231,8 +231,11 @@ nav h1 a {
   margin: 0;
   font-size: 11pt;
 }
-#restaurants-list li a {
+
+#restaurants-list li a,
+#restaurants-list li button {
   background-color: #854500;
+  border: none;
   border-bottom: 3px solid #eee;
   color: #fff;
   display: inline-block;
@@ -242,6 +245,7 @@ nav h1 a {
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
+  line-height: 1.5;
 }
 
 /* ====================== Restaurant Details ====================== */
@@ -380,7 +384,7 @@ nav h1 a {
 		margin: 15px 0px;
 		width: 100%;
 	}
-	#restaurants-list li .restaurant-more-details { 
+	#restaurants-list li .restaurant-details-btn { 
 		width: 100%;
 	}
 }
@@ -407,7 +411,7 @@ input[type="text"], textarea {
   width: 100%;
   margin: 5px 0;
   padding: 8px;
-  border: 1px solid rgb(128, 127, 127);
+  border: 1px solid rgb(133, 69, 0);
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -522,4 +526,9 @@ button.btn-default:hover {
 .alert-msg.hide {
   transition: 0.5s ease-in-out left;
   left: -100%;
+}
+.show-map-btn {
+  background: white;
+  border: none;
+  padding: 15px;
 }

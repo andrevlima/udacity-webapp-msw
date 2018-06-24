@@ -103,9 +103,9 @@ window.initMap = () => {
   };
 
   if(DOMLoaded) { 
-    setTimeout(runMap, 2500);
+    setTimeout(runMap, 3500);
   } else {
-    document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 2500));
+    document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 3500));
   }
     
   updateRestaurants();
@@ -188,14 +188,41 @@ createRestaurantHTML = (restaurant) => {
   li.append(address);
 
   const more = document.createElement('a');
-  more.classList.add("restaurant-more-details");
+  more.classList.add("restaurant-details-btn");
   more.setAttribute("role", "button");
   more.innerHTML = 'View Details';
   more.setAttribute("aria-label", "Restaurant " + restaurant.name + ", click to view details");
   more.href = DBHelper.urlForRestaurant(restaurant);
   li.append(more)
 
-  return li
+  let hasFavorite = isTrue(restaurant.is_favorite);
+  const favorite = document.createElement('button');
+  favorite.classList.add("restaurant-details-btn");
+  favorite.setAttribute("role", "switch");
+  favorite.setAttribute("aria-label", "Restaurant " + restaurant.name + ", click favorite");
+  favorite.onclick = function(event) {
+    hasFavorite = !hasFavorite
+    DBHelper.markAsFavorite(restaurant.id, hasFavorite)//.then(() => updateFavoriteButton(favorite, hasFavorite));
+    updateFavoriteButton(favorite, hasFavorite);
+  }
+  updateFavoriteButton(favorite, hasFavorite);
+  li.append(favorite)
+
+  return li;
+}
+
+isTrue = (exp) => {
+  return exp == "true" || exp == true;
+}
+
+updateFavoriteButton = (button, hasFavorite) => {
+  if(hasFavorite) {
+    button.innerHTML = '★';
+    button.setAttribute("aria-checked", "true");
+  } else {
+    button.innerHTML = '☆';
+    button.setAttribute("aria-checked", "false");
+  }
 }
 
 /**

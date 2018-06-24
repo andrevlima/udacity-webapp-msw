@@ -58,4 +58,12 @@ class Helper {
         setTimeout(() => msg.className = "alert-msg hide", 4000);
         setTimeout(() => msg.remove(), 5000);
     }
+
 }
+
+Helper.displayMapToggle = (function() {
+    let shown = true;
+    return () => {
+        document.getElementById('map').style.display = (shown = !shown) ? 'none' : 'block';
+    }
+})();
