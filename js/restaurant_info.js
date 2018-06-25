@@ -75,9 +75,9 @@ window.initMap = () => {
       }
 
       if(DOMLoaded) { 
-        setTimeout(runMap, 2500);
+        setTimeout(runMap, 4000);
       } else {
-        document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 2500));
+        document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 4000));
       }
     }
   });

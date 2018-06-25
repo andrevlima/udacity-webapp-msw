@@ -63,7 +63,15 @@ class Helper {
 
 Helper.displayMapToggle = (function() {
     let shown = true;
+    let alreadyHasMap = false;
     return () => {
+        if(!window.runMap) {
+            return;
+        }
+        if(!alreadyHasMap) {
+            alreadyHasMap = true;
+            window.runMap();
+        }
         document.getElementById('map').style.display = (shown = !shown) ? 'none' : 'block';
     }
 })();

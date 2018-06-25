@@ -88,7 +88,7 @@ window.initMap = () => {
     lat: 40.722216,
     lng: -73.987501
   };
-  let runMap = () => {
+  window.runMap = () => {
     self.map = new google.maps.Map(document.getElementById('map'), {
       zoom: 12,
       center: loc,
@@ -102,11 +102,13 @@ window.initMap = () => {
     addMarkersToMap();
   };
 
+  /*
   if(DOMLoaded) { 
-    setTimeout(runMap, 3500);
+    setTimeout(runMap, 4500);
   } else {
-    document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 3500));
+    document.addEventListener('DOMContentLoaded', (e) => setTimeout(runMap, 4500));
   }
+  */
     
   updateRestaurants();
 }
