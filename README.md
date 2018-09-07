@@ -1,5 +1,5 @@
 # Mobile Web Specialist Certification Course
----
+
 #### _Three Stage Course Material Project - Restaurant Reviews_
 
 ## Project Overview: Stage 1, 2 and 3
@@ -16,7 +16,7 @@ const imagemin = require('gulp-imagemin');
 const webp = require('gulp-webp');
 ```
 
-After, started up the backend, startup frontend using:
+After, started up the backend and finally startup frontend using:
 ```
 start.cmd
 ```
